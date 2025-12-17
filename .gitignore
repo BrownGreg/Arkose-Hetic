@@ -1,0 +1,31 @@
+# Ignore CSV and other local data exports
+*.csv
+ARKOSE*.csv
+*donnees*.csv
+
+# Ignore n8n export files
+n8n_*.json
+
+# Python
+__pycache__/
+*.py[cod]
+
+# Virtual envs
+venv/
+.venv/
+env/
+
+# IDEs
+.vscode/
+.idea/
+
+# System
+.DS_Store
+
+# Environment files and logs
+.env
+*.log
+
+# Databases / local data
+*.sqlite
+*.db
