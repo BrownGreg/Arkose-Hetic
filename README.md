@@ -1,55 +1,89 @@
-Plan marketing & automatisation — Attirer les grimpeurs et valoriser l'espace
+(The file `/home/browngreg/Hetic/arkose/README.md` exists, but is empty)
+# Arkose — Dashboard & Automations
 
-Objectif : Expliquer comment améliorer la communication et le marketing pour attirer davantage de grimpeurs tout en mettant en valeur l'espace et les expériences uniques, en s'appuyant sur un "Plan d'automatisation" et des outils recommandés.
+Ce dépôt contient un tableau de bord Streamlit (`main.py`) et trois exports de workflows n8n. (automatisations marketing pour Arkose).
 
-## Résumé exécutif
-- Mettre en avant l'identité du lieu (ambiance, voies, coachings, événements uniques).
-- Automatiser la capture de leads, la qualification, les relances et la promotion d'événements pour scaler l'acquisition tout en gardant une expérience personnalisée.
+**Prérequis**
+- Python 3.8+ installé
+- Créez et activez un environnement virtuel recommandé
 
-## Principes clés
-- Prioriser l'expérience visuelle et sociale : photos/vidéos courtes, UGC, témoignages.
-- Segmenter les cibles : débutants, pratiquants réguliers, familles, groupes, écoles.
-- Mesurer et itérer avec des KPIs clairs (réservations, taux de conversion, CAC, rétention).
+**Installation**
 
-## Stratégie de communication
-- Contenu : reels IG/TikTok courts, stories en coulisses, mini-portraits d'adhérents, tutoriels/astuces.
-- Offres & événements : soirées thématiques, journées découverte, compétitions locales, stages.
-- Canaux : Instagram, Facebook, Google Business Profile, newsletter, mailing local, partenariats (clubs, écoles).
-- Local SEO : fiche Google à jour, pages événements, avis et photos.
+1. Créez et activez un venv :
 
-## Plan d'automatisation (phases)
-1. Audit & tracking
-   - Installer analytics (GA4), conversion tracking Meta/Google, et Hotjar pour heatmaps.
-2. Infrastructure minimale
-   - CRM léger (HubSpot Free / Airtable / Notion CRM) pour centraliser leads.
-   - Outil d'automatisation : n8n (auto-hébergé) ou Make/Zapier selon budget.
-3. Automatisations MVP
-   - Capture leads depuis formulaire / Instagram Ads / Google → créer contact CRM.
-   - Envoi automatique d'un email de bienvenue avec offre d'essai / code réduction.
-   - Sync réservations (Calendly / Bookings) → confirmation + rappel SMS/email.
-4. Croissance & retargeting
-   - Segmenter contacts (intérêt, fréquence) → séquences d'email ciblées.
-   - Créer audiences pour retargeting (Facebook/Google) via intégrations.
-5. Itération
-   - Mesurer KPIs, A/B tests d'objets d'email, créas publicitaires, horaires d'events.
+```bash
+python -m venv .venv
+source .venv/bin/activate
+```
 
-## Outils recommandés
-- Automatisation: n8n, Make, Zapier
-- CRM: HubSpot Free, Airtable
-- Email/SMS: Brevo, Mailchimp, Twilio
-- Réservations: Calendly, Booklike
-- Analytics: GA4, Meta Pixel, Hotjar
+2. Installez les dépendances :
 
-## Workflows exemples
-- Formulaire d'essai → CRM → Email de bienvenue → Rappel si non-réservation
-- Après visite → Survey NPS → Solliciter UGC si score élevé
+```bash
+pip install -r requirements.txt
+```
 
-## 30/60/90 jours
-- 0-30: tracking + CRM + 2 automatisations
-- 30-60: calendrier éditorial + retargeting
-- 60-90: itérations et paid tests
+**Lancer l'application**
+
+Depuis la racine du projet lancez :
+
+```bash
+streamlit run main.py
+```
+
+L'application Streamlit s'ouvrira dans votre navigateur (par défaut sur `http://localhost:8501`).
+
+Si vous voulez spécifier un CSV différent, modifiez la valeur du chemin dans `main.py` ou remplacez `ARKOSE donnees_2025_graph.csv` par votre fichier.
 
 ---
-Fichiers utiles: `n8n_arkose_acquisition.json`, `n8n_arkose_conversion.json`, `n8n_arkose_fidelisation.json`
 
-Contactez-moi si vous voulez que je pousse ce `README.md` et retire les CSV du suivi Git.
+**À quoi sert `main.py`**
+
+- `main.py` est une application Streamlit qui :
+	- charge et nettoie les données depuis `ARKOSE donnees_2025_graph.csv`;
+	- propose des filtres (mois, jour) et affiche des KPIs financiers (CA estimé, part restauration, dépense moyenne par visiteur) ;
+	- propose un simulateur de prix/mix clients pour estimer le CA selon différents profils (abonnés, carnets, unitaires) ;
+	- affiche des graphiques (flux grimpeurs, ventes resto, taux de conversion) et un onglet de données brutes téléchargeable (`arkose_donnees_propres.csv`) ;
+	- dans l'onglet "Automations n8n" : affiche et permet de télécharger les exports JSON des workflows n8n fournis.
+
+Fonctions utiles dans le fichier : `load_data(path)` pour charger/normaliser le CSV, et `load_workflow(path)` pour lire un JSON d'export n8n.
+
+---
+
+**Les 3 automations n8n (fichiers JSON fournis)**
+
+Les fichiers à la racine :
+
+- `n8n_arkose_acquisition.json` — Acquisition Heures Creuses
+	- Déclenchement : hebdomadaire (`Schedule Trigger`).
+	- Récupère la ligne de la semaine passée depuis un Google Sheet (configurer `sheetId`).
+	- Si la capacité/passage est faible (ex. seuil 160), envoie un email promotionnel aux abonnés.
+	- Usage : importer dans n8n, ajouter l'ID du Google Sheet et configurer OAuth2 / paramètres email.
+
+- `n8n_arkose_conversion.json` — Conversion Restauration
+	- Déclenchement : quotidien.
+	- Récupère les données de la journée précédente, calcule le ratio `Plat / Passage`.
+	- Si le ratio < 15%, envoie une alerte Slack pour lancer une promo restauration.
+	- Usage : importer, configurer l'accès Google Sheets et le canal Slack.
+
+- `n8n_arkose_fidelisation.json` — Fidélisation J+21
+	- Déclenchement : quotidien.
+	- Récupère le fichier clients depuis Google Sheets, filtre les clients dont la dernière visite remonte à 21 jours.
+	- Envoie un email de relance personnalisé (`Email Relance`) aux clients ciblés.
+	- Usage : importer et renseigner l'ID du sheet clients et les paramètres d'envoi d'email.
+
+Remarques pour n8n :
+- Avant d'activer les workflows, mettez à jour les `sheetId` et configurez les credentials OAuth2 (Google Sheets), Slack et email.
+- Pour importer un workflow : ouvrez n8n → Workflows → Import → choisissez le fichier JSON.
+
+---
+
+Fichiers clés dans ce dépôt :
+- `main.py` — application Streamlit (dashboard)
+- `requirements.txt` — dépendances Python
+- `ARKOSE donnees_2025_graph.csv` — jeu de données source
+- `n8n_arkose_*.json` — exports de workflows n8n à importer
+
+Si vous voulez, je peux :
+- exécuter l'application localement et vérifier qu'elle démarre, ou
+- générer un petit script d'exemple pour importer automatiquement ces workflows dans n8n (via API).
+
