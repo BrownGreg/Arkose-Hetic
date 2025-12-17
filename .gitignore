@@ -3,6 +3,8 @@
 ARKOSE*.csv
 *donnees*.csv
 
+n8n.py
+
 # Ignore n8n export files
 n8n_*.json
 
